@@ -1,0 +1,14 @@
+# Comunição nativa com Outlook e Word Desktop para conversão em PDF
+pywin32
+
+# Permite que o Python "leia" o texto dentro do Word sem abrir o Word
+python-docx
+
+# Gestão da planilha de status e hitórico de alterações
+Pandas
+
+# Protege caminhos de diretórios e credenciais
+python-dotenv
+
+# Gera logs coloridos e barras de progresso o terminal
+rich
