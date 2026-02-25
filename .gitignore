@@ -1,0 +1,29 @@
+# Ambiente virtual
+venv/
+.env
+
+# Cache
+_pycache_/
+*.pyc
+*.pyo
+
+# Logs
+logs/
+
+# Dados
+data/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+
+# Material auxiliar
+_material_de_apoio/
