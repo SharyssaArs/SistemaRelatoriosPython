@@ -28,8 +28,9 @@ def inicializar_fila(data_inicial_datetime, quantidade_datas=6):
     
     for i in range(quantidade_datas):
         nova_data = data_inicial_datetime + timedelta(days=15 * i)
-        fila_datas.append(nova_data.date())
-    
+        fila_datas.append(nova_data.strftime("%d-%m-%Y")) 
+        #'append' adiciona no final da fila (FIFO)
+        #'.strftime("%Y-%m-%d")' para manter apenas a parte da data, sem hora
     return fila_datas
 
 def obter_proxima_data():
