@@ -68,6 +68,8 @@ def listar_proximas_datas():
     """Retorna todas as datas presentes na fila"""
     return list(fila_datas)
 
+
+
 # Inicializar a fila
 inicializar_fila(DATA_INICIAL, quantidade_datas=6)
 
