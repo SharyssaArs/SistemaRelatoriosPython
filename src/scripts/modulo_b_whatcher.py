@@ -2,128 +2,53 @@ from docx import Document #Usada para manipular documentos Word
 import pandas as pd #Usado para manipular e acessar dados em formato de tabela (CSV)
 import os #Biblioteca padrão para interação com o Sistema Operacional
 
-doc = Document(r"C:\Users\sharyssa.silva\OneDrive - MINISTERIO DA JUSTIÇA\Documentos\00_EM_PREENCHIMENTO\00 - 2026 Relatório Quinzenal DRCI - Modelo Editavel.docx") 
-#O 'R' antes da string indica uma 'Raw String' (string bruta), que trata a barra invertida como um caractere
-#Isso possibilita a interpretação da string dessa forma, como um caminho de arquivo
+#Constantes são escritas em letras maiúsculas para indicar que seus valores não devem ser alterados durante a execução do programa
+SECOES_IGNORADAS = ['DATA', 'RELATÓRIO/DRCI'] #Lista de seções que serão ignoradas durante a extração de conteúdo do documento
+ESTILO_TITULO = 'Heading 1' #Definição do estilo de título a ser utilizado para identificar as seções 'titúlo' no documento
+ESTILO_SUBTITULO = 'subtitulo' #Definição do estilo de subtítulo a ser utilizado para identificar as seções 'subtitulos' no documento
+MINIMO_CARACTERES = 90
 
-SECOES_IGNORADAS = ["DATA", "RELATÓRIO/DRCI N° __/2026"] #Sessôes que serão ignoradas, preenchidas antes do documento ser processado
-LIMIAR_PREENCHIMENTO = 20 #Quantidade de caracteres mínimos para considerar um campo como preenchido, pode ser alterado
+def carregar_csv(caminho_csv):
+    if caminho_csv is None: #Verifica se o caminho do arquivo CSV foi fornecido
+        print(f"Erro: O caminho do arquivo CSV não foi fornecido.")
+        exit(1) #Encerra o programa com código de status 1 (indica erro)
 
-def extrair_secao(doc, sigla): 
-    #Extrai o texto de uma seção e a sigla é usada para identificar a seção específica a ser extraída do documento
+    if not os.path.exists(caminho_csv): #Verifica se o arquivo existe no caminho especificado
+        print("Erro: O arquivo CSV não foi encontrado no caminho especificado.")
+        exit(1) #Encerra o programa com código de status 1 (indica erro)
 
-    paragrafos = doc.paragraphs #Lista de parágrafos do documento, cada paragrafo é um objeto que contém o texto e o estilo - Ex: 'Heading 1' 
-    resultado = {} #Dicionário para armazenar a chave = nome do campo e valor = conteúdo do campo
-    i = 0 
+    df = pd.read_csv(caminho_csv) #Lê o arquivo CSV e armazena seu conteúdo em um DataFrame do pandas para facilitar a manipulação dos dados
+    return df #Retorna o DataFrame contendo os dados do arquivo CSV para uso posterior no programa
 
-    while i < len(paragrafos): #len é usada para medir o tamanho e/ou quantidade de itens dentro de um objeto
-        paragrafo_atual = paragrafos[i]
-
-        if paragrafo_atual.style.name == "Heading 1": 
-            
-            if sigla in paragrafo_atual.text: 
-                i += 1 
-                proximo = paragrafos[i] if i <len(paragrafos) else None
-
-                if proximo and proximo.style.name == "subtitulos":
-
-                    while i < len(paragrafos) and paragrafos[i].style.name != "Heading 1":
-
-                        if paragrafos[i].style.name == "subtitulos":
-                            nome_campo = paragrafos[i].text.strip()
-                            conteudo = []
-                            i += 1 
-
-                            while i < len(paragrafos) and paragrafos[i].style.name not in ["Heading 1", "subtitulos"]:
-                                conteudo.append(paragrafos[i].text.strip())
-                                i += 1
-
-                            resultado[nome_campo] = " ".join(conteudo)
-                        else:
-                            i +=1
-
-                else:
-                    conteudo = []
-
-                    while i <len(paragrafos) and paragrafos[i].style.name != "Heading 1":
-                        conteudo.append(paragrafos[i].text.strip())
-                        i += 1
-                        
-                    resultado[paragrafo_atual.text.strip()] = " ".join(conteudo)
-                    
-                return resultado
-        i += 1
-    return resultado
-
-def secao_completa(campos):
-    if not campos: 
-        return False
+def carregar_documento(caminho_docx):
+    if caminho_docx is None: #Verifica se o caminho do arquivo não esta vazio
+        print(f"Erro: O caminho do arquivo DOCX não foi fornecido.")
+        exit(1) #Encerra o programa com código de status 1 (indica erro)
     
-    for campo, conteudo in campos.itens(): 
-        
-        if len(conteudo) <LIMIAR_PREENCHIMENTO:
-            
-            return False
-    return True
-
-def processar_watcher():
-    script_dir = os.path.dirname(os.path.abspath(__file__)) 
-    dotenv_path = os.path.join(script_dir, '../../config/.env')
-     
-
-    from dotenv import load_dotenv
-    load_dotenv(dotenv_path)
+    if not os.path.exists(caminho_docx): #Verifica se o arquivo existe no caminho especificado
+        print("Erro: O arquivo não foi encontrado no caminho especificado")
+        exit(1) #Encerra o programa com código de status 1 (indica erro)
     
+    documento = Document(caminho_docx)
+    return documento
 
-    caminho_csv = os.getenv("PATH_DATA")
-    data_path = os.path.abspath(os.path.join(script_dir, '../../' + caminho_csv))
+def verificar_preenchimento(documento):
+    dicionario = {} #
+    paragrafos = documento.paragraphs #Recebe a lista de paragrafos do documento
+    for i, paragrafo in enumerate(paragrafos): #Lista por número cada paragrafo
+        if paragrafo.style.name == ESTILO_TITULO: #Se o nome do estilo do paragrafo atual for = Estilo_Titulo
+            if paragrafo.text in SECOES_IGNORADAS: #Se o texto do paragrafo atual estiver em SECOES_IGNORADAS
+                #continue 
+                if i + 1 < len(paragrafos): #Se i + 1 for menor que o número de paragrafos
+                    proximo_paragrafo = paragrafos[i + 1] #Proximo_paragrafo recebe o numero de i + 1
 
-    df = pd.read_csv(data_path)
+                    if proximo_paragrafo.style.name == ESTILO_TITULO: #Se o nome do estilo do proximo paragrafo for = ESTILO_TITULO
+                        texto_titulo = paragrafo.texto
+                        sigla = texto_titulo.split("(")[1].replace(")", "").strip() #.split() separa a string a partir do caractere, .replace() substitui um caractere pela string vazia, .strip() retira espeços vazios
+                        for j in range (i+1, len(paragrafos)):
+                            if paragrafos[j].style.name == ESTILO_TITULO:
+                                break
+                            texto_conteudo += paragrafos[j].text
 
-    atualizad = False
-
-    for index, row in df.interrows():
-        nome = row['nome']
-        sigla = row['sigla']
-        status = row['status']
-        caminho_doc = row['link_documento']
-
-        if status == 'Aprovado':
-            print(f"Pulando {nome} - já aprovado")
-            continue
-
-        if not os.path.exists(caminho_doc):
-            print(f"Documento não encontrado para {nome}: {caminho_doc}")
-            continue
-        print(f"\nAnalisando {nome} ({sigla})...")
-
-        doc = Document(caminho_doc)
-        campos = extrair_secao(doc, sigla)
-
-        if not campos:
-            print(f"Seção {sigla} não encontrada no documento")
-            continue
-
-        if secao_completa(campos):
-            novo_status = 'A Validar'
-
-        elif any(len(c) >= LIMIAR_PREENCHIMENTO for c in campos.values()):
-            novo_status = 'Em Preenchimento'
-        else:
-            novo_status = 'Pendente'
-
-        if novo_status != status:
-            print(f"{nome}: {status} -> {novo_status}")
-            df.at[index, 'status'] = novo_status
-            atualizado = True
-        else:
-            print(f"{nome}: sem alterações ({status})")
-
-    if atualizado:
-        df.to_csv(data_path,indez = False)
-        print("\nCSV atualizado com sucesso!")
-    else:
-        print("\n Nenhuma atualização detectada.")
-
-if __name__ == "__main__":
-    processar_watcher()
+                    elif proximo_paragrafo.style.name == ESTILO_SUBTITULO: #Se o nome do estilo do proximo paragrafo for = ESTILO_SUBTITULO
+                        print("ola")
