@@ -45,10 +45,16 @@ def verificar_preenchimento(documento):
                     if proximo_paragrafo.style.name == ESTILO_TITULO: #Se o nome do estilo do proximo paragrafo for = ESTILO_TITULO
                         texto_titulo = paragrafo.texto
                         sigla = texto_titulo.split("(")[1].replace(")", "").strip() #.split() separa a string a partir do caractere, .replace() substitui um caractere pela string vazia, .strip() retira espeços vazios
-                        for j in range (i+1, len(paragrafos)):
-                            if paragrafos[j].style.name == ESTILO_TITULO:
+                        texto_conteudo = ""
+                        for j in range (i+1, len(paragrafos)): 
+                            if paragrafos[j].style.name == ESTILO_TITULO: 
                                 break
-                            texto_conteudo += paragrafos[j].text
+                            texto_conteudo += paragrafos[j].text #'+=' == incrementa
+                        dicionario[sigla] = len(texto_conteudo) >= MINIMO_CARACTERES
+                        return dicionario
 
                     elif proximo_paragrafo.style.name == ESTILO_SUBTITULO: #Se o nome do estilo do proximo paragrafo for = ESTILO_SUBTITULO
                         print("ola")
+
+if __name__ = "__main__":
+    doc = carregar_documento()
