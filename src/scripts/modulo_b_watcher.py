@@ -23,6 +23,7 @@ def carregar_csv(caminho_csv):
         print("Erro: O arquivo CSV não foi encontrado no caminho especificado.")
         exit(1)
     df = pd.read_csv(caminho_csv)
+    print(f"✓ CSV carregado: {len(df)} contatos encontrados")
     return df
 
 def carregar_documento(caminho_docx):
@@ -33,6 +34,7 @@ def carregar_documento(caminho_docx):
         print("Erro: O arquivo não foi encontrado no caminho especificado.")
         exit(1)
     documento = Document(caminho_docx)
+    print(f"✓ Documento carregado com sucesso")
     return documento
 
 def verificar_preenchimento(documento):
@@ -61,6 +63,8 @@ def verificar_preenchimento(documento):
                         break
                     texto_conteudo += paragrafos[j].text
                 dicionario[sigla] = len(texto_conteudo) >= MINIMO_CARACTERES
+                status = "✓ preenchido" if dicionario[sigla] else "✗ pendente"
+                print(f"  {sigla}: {status}")
 
             # Caso 2 — título com subtítulos
             else:
@@ -79,12 +83,11 @@ def verificar_preenchimento(documento):
                         if len(texto_subtitulo) >= MINIMO_CARACTERES:
                             subtitulos_preenchidos += 1
                 dicionario[sigla] = subtitulos_preenchidos == total_subtitulos
+                status = "✓ preenchido" if dicionario[sigla] else "✗ pendente"
+                print(f"  {sigla}: {status}")
     return dicionario
 
 def atualizar_csv(df, resultados, caminho_csv):
-    print(f"Caminho CSV: {caminho_csv}")
-    print(f"Resultados: {resultados}")
-    print(f"Siglas no CSV: {df['sigla'].tolist()}")    
     for index, row in df.iterrows():
         if row['sigla'] in resultados:
             if resultados[row['sigla']] == True:
@@ -92,13 +95,17 @@ def atualizar_csv(df, resultados, caminho_csv):
             else:
                 df.at[index, 'status'] = 'Pendente'
             df.at[index, 'ultima_atualizacao'] = datetime.now().strftime("%d/%m/%Y %H:%M")
+    print(f"✓ CSV atualizado com sucesso")
     df.to_csv(caminho_csv, index=False)
 
 def executar_watcher():
+    print("\n=== Módulo B — Watcher ===")
     caminho_docx = r"C:\Users\sharyssa.silva\OneDrive - MINISTERIO DA JUSTIÇA\Documentos\00_EM_PREENCHIMENTO\01 - 2026 Relatório Quinzenal DRCI.docx"
     caminho_csv = os.getenv('PATH_DATA')
+    print("\nVerificando preenchimentos...")
     df = carregar_csv(caminho_csv)
     doc = carregar_documento(caminho_docx)
+    print("\nVerificando preenchimentos...")    
     resultados = verificar_preenchimento(doc)
     atualizar_csv(df, resultados, caminho_csv)
 

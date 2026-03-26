@@ -12,3 +12,6 @@ python-dotenv
 
 # Gera logs coloridos e barras de progresso o terminal
 rich
+
+#Biblioteca de feriados
+holidays
