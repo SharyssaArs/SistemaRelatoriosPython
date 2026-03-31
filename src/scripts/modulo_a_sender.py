@@ -1,8 +1,8 @@
 from dotenv import load_dotenv
 import pandas as pd
 import os
-from src.utils.dates import inicializar_fila, eh_dia_de_envio, processar_data, obter_proxima_data, listar_proximas_datas
-from src.utils.email import enviar_email
+from src.utils.dates import (mes_ano_atual, datas_mensais, controle_data, dia_de_envio, gerar_periodo, gerar_prazo)
+from src.utils.emails import enviar_email
 
 # Carrega as configurações do arquivo que está em config/.env
 # Usa o diretório do script como referência para encontrar o .env
@@ -22,19 +22,20 @@ if caminho_dados is None:
 data_path = os.path.join(script_dir, '../../' + caminho_dados)
 data_path = os.path.abspath(data_path)
 
-# Lê o arquivo
-df = pd.read_csv(data_path)
-
-#Visualiza as primeiras linhas
-print(df.head())
-
 def processar_envio_quinzenal():
+    # Lê o arquivo
+    df = pd.read_csv(data_path)
+    #Visualiza as primeiras linhas
+    print(df.head())
+    #Geração das datas
+    mes, ano = mes_ano_atual()
+    data1, data2 = datas_mensais(mes, ano)
+    data1, data2 = controle_data(data1, data2)
+    primeiro_dia, ultimo_dia = gerar_periodo(data1, data2)
+    prazo = gerar_prazo()
+
     #Se 'hoje == proxima_data', envia o email e processa a fila
-    if eh_dia_de_envio():
-        print(f"Hoje é dia de envio!")
-        data_processada = processar_data() #Remove a data da fila e adiciona a próxima
-        print(f"Relatório enviado em: {data_processada}") #Mostra a data que foi processada (removida da fila) - data do envio
-        
+    if dia_de_envio(data1, data2):        
         # Itera por cada linha do CSV
         for index, row in df.iterrows():
             nome = row['nome']
@@ -46,19 +47,15 @@ def processar_envio_quinzenal():
                 print(f"\nEnviando para {nome} ({email})...")
                 enviar_email(
                     destinatario=email,
-                    assunto="Relatório Quinzenal",
-                    mensagem=f"Olá {nome},\n\nSegue em anexo seu relatório.\n\nAtt"
+                    assunto=f"Preenchimento do Relatório Quinzenal - Período: {primeiro_dia} a {ultimo_dia}. PRAZO: {prazo}",
+                    mensagem=f"Olá {nome},\n\nSeguindo a rotina do DRCI, encaminhamos o documento para preenchimento do Relatório Quinzenal, referente ao período de {primeiro_dia} a {ultimo_dia}.\n\n{row['link_documento']}\n\nAs informações deverão ser registradas por meio do link até o dia {prazo}.\n\nAtenciosamente,\nCoordenação de Gestão Interna."
                 )
             else:
                 print(f"Pulando {nome} - Status: {status}")
-        
-        print(f"\nPróximo envio: {obter_proxima_data()}")
         print("\n✓ Todos os emails foram enviados com sucesso!")
         return True
     else:
-        proxima = obter_proxima_data()
         print(f"Hoje não é dia de envio.")
-        print(f"Próximo envio programado para: {proxima}")
         return False
 
 # Executa o processamento de envio

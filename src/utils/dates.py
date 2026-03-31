@@ -1,3 +1,4 @@
+import calendar
 from datetime import timedelta, date
 import holidays
 
@@ -11,33 +12,43 @@ def datas_mensais(mes, ano): #Etapa 2 - montar datas
     data2 = date(ano, mes, 16)
     return data1, data2
 
-def dia_da_semana(data1, data2): #Etapa 3 - descobrir dia da semana
-    dia_semana1 = data1.weekday()
-    print(data1, " : ", dia_semana1)
-    dia_semana2 = data2.weekday()
-    print(data2, " : ", dia_semana2)
-    return data1.weekday(), data2.weekday()
-
+#dia da semana
 
 def controle_data(data1, data2): #Etapa 4, 5 e 6- integrar feriados
     feriados = holidays.BR(state='DF', years=[data1.year, data2.year])
     while data1.weekday() >= 5 or data1 in feriados:
-        print("Data: ", data1, "não é valida, verificando próximo dia util...")
         data1 += timedelta(days=1)
     while data2.weekday() >= 5 or data2 in feriados:
-        print("Data: ", data2, "não é valida, verificando próximo dia util...")
         data2 += timedelta(days=1)
     return data1, data2
 
-mes, ano = mes_ano_atual()
-data1, data2 = datas_mensais(mes, ano)
+def dia_de_envio(data1, data2):
+    dia_atual = date(2026, 3, 16)
+    if dia_atual == data1 or dia_atual == data2:
+        print("Hoje é dia de envio!")
+        print("Relatório enviado em: ", dia_atual)
+        return True
+    else:
+        return False
 
-print("Mês e Ano")
-print(mes_ano_atual())
-print("Datas: ")
-print(datas_mensais(mes, ano))
-print("Dia da Semana: ")
-print( dia_da_semana(data1, data2))
-print("Verificação de data")
-data1, data2 = controle_data(data1, data2)
-print("Datas válidas: \n", data1, "\n", data2)
+def gerar_periodo(data1, data2):
+    dia_atual = date(2026, 3, 16)
+    if data1 == dia_atual:
+        primeiro_dia = data1
+        ultimo_dia = data2 - timedelta(days=1)
+        return primeiro_dia.strftime("%d/%m/%Y"), ultimo_dia.strftime("%d/%m/%Y")
+    elif data2 == dia_atual:
+        primeiro_dia = data2
+        ultimo_dia = date(data2.year, data2.month, (calendar.monthrange(data2.year, data2.month)[1]))
+        return primeiro_dia.strftime("%d/%m/%Y"), ultimo_dia.strftime("%d/%m/%Y")
+    else:
+        return None
+    
+def gerar_prazo():
+    hoje = date.today()
+    prazo = hoje + timedelta(days=5)
+    feriados = holidays.BR(state='DF', years=[prazo.year, prazo.year + 1])
+    while prazo.weekday() >= 5 or prazo in feriados:
+        prazo += timedelta(days=1)
+    return prazo.strftime("%d/%m/%Y")
+
