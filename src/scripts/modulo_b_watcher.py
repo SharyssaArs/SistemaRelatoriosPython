@@ -100,7 +100,7 @@ def atualizar_csv(df, resultados, caminho_csv):
 
 def executar_watcher():
     print("\n=== Módulo B — Watcher ===")
-    caminho_docx = r"C:\Users\sharyssa.silva\OneDrive - MINISTERIO DA JUSTIÇA\Documentos\00_EM_PREENCHIMENTO\01 - 2026 Relatório Quinzenal DRCI.docx"
+    caminho_docx = os.getenv('CAMINHO_DOCX')
     caminho_csv = os.getenv('PATH_DATA')
     print("\nVerificando preenchimentos...")
     df = carregar_csv(caminho_csv)

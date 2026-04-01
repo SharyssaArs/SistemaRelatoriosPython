@@ -45,10 +45,11 @@ def processar_envio_quinzenal():
             # Envia apenas para os com status "Pendente"
             if status == 'Pendente':
                 print(f"\nEnviando para {nome} ({email})...")
+                link_documento = os.getenv('LINK_DOCUMENTO')
                 enviar_email(
                     destinatario=email,
                     assunto=f"Preenchimento do Relatório Quinzenal - Período: {primeiro_dia} a {ultimo_dia}. PRAZO: {prazo}",
-                    mensagem=f"Olá {nome},\n\nSeguindo a rotina do DRCI, encaminhamos o documento para preenchimento do Relatório Quinzenal, referente ao período de {primeiro_dia} a {ultimo_dia}.\n\n{row['link_documento']}\n\nAs informações deverão ser registradas por meio do link até o dia {prazo}.\n\nAtenciosamente,\nCoordenação de Gestão Interna."
+                    mensagem=f"Olá {nome},\n\nSeguindo a rotina do DRCI, encaminhamos o documento para preenchimento do Relatório Quinzenal, referente ao período de {primeiro_dia} a {ultimo_dia}.\n\n{link_documento}\n\nAs informações deverão ser registradas por meio do link até o dia {prazo}.\n\nAtenciosamente,\nCoordenação de Gestão Interna."
                 )
             else:
                 print(f"Pulando {nome} - Status: {status}")
